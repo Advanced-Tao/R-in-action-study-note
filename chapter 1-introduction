@@ -1,0 +1,25 @@
+#-------------------------chapter1------------------------------------
+# 执行一个脚本文件
+# 每次启动R，都要执行它
+setwd("D:/Users/ny46028/life")
+getwd()
+.libPaths()
+# 将所有的文本输出结果都储存在了good.txt中
+# append表示往后追加，如果append= FALSE,则原文件会被覆盖
+# split=TRUE可以将输出同时发送到屏幕和输出文件中
+sink("good.txt",split = TRUE)
+y <- c(1,2,3)
+Y
+t
+data
+# 将所有的图形输出结果都储存在great.pdf中
+pdf("great.pdf",onefile = TRUE) # 可以将多张图片保存在PDF的一页之内
+plot(c(1:10),c(11:20))
+x <- pretty(-3:3,100)
+y <- dnorm(x)
+plot(x,y)
+x <- pretty(0:1,100)
+z <- dunif(x)
+plot(x,z)
+dev.off()
+
