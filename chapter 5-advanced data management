@@ -1,0 +1,315 @@
+f--------------------------chapter 5----------------------
+  --------------------------数学函数----------------------
+  # 当数学函数被应用于数值向量、矩阵或数据框时，他会作用于每一个独立的值
+  x <- -3.2
+  abs(x)
+  sqrt(abs(x))
+  ceiling(x)
+  floor(x)
+  # 向零的方向截取x中的整数部分
+  trunc(x)
+  round(x,digits = 0)
+  signif(x,digits = 1)
+  log(abs(x))
+  log10(abs(x))
+  exp(x)
+  getwd()
+  -------------------------统计函数----------------------
+    score <- read.csv("111.csv",header=TRUE,sep=",")
+  score[,2:4]
+  math=score[,2]
+  # 均值
+  y <- mean(score[,2])
+  y
+  # 丢弃最大10%和最小10%，以及所有缺失值后的算数平均数
+  z <- mean(score[,2],trim = 0.1,na.rm = TRUE)
+  # 中位数
+  y=median(math)
+  # 标准差,分母是(n-1)
+  # 方式1
+  y=sd(math) 
+  y
+  # 方式2
+  n <- length(math)
+  mean_math <- sum(math)/n
+  css <- sum((math-mean_math)^2)
+  sd_math <- sqrt(css/(n-1))
+  sd_math
+  
+  # 方差
+  y=var(math)
+  y
+  # 求25%分位数
+  y=quantile(math,0.25)
+  y
+  # 求值域
+  y=range(math)
+  k
+  # 求和
+  y=sum(math)
+  y
+  # 滞后差分，可以滞后任一项，默认lag=1
+  y=diff(math,lag=2)
+  y
+  # 求最小值
+  y=min(math)
+  y
+  # 求最大值
+  y=max(math)
+  y
+  # 对数据框的指定列进行均值为0、标准差为1的正态标准化
+  newdata <- scale(score[,2])
+  
+  # 将指定列变换回原来的均值和标准差
+  newdata <- newdata*sd(math)+mean(math)
+  -------------------------概率函数----------------------
+    # c(-3,3)代表区间，30代表间隔的个数,实际x是一个长度为31的数值向量
+    x <- pretty(c(-3,3),30)
+  length(x)
+  y <- dnorm(x) # 计算正态分布密度函数值
+  plot(x,y,type="l",
+       xlab="Normal Deviate",
+       ylab="Density"
+  ) # type="l"可以把离散的点用光滑的曲线连接起来,xlab和ylab可以给x轴、y轴贴标签
+  # yaxs="i"似乎没有实际作用
+  # 求分布函数值
+  pnorm(1.96)
+  # 求分位数
+  qnorm(0.975, mean=0, sd=1)
+  # 生成两个正态分布随机数
+  rnorm(2, mean=50,sd=10)
+  # 生成均匀分布的随机数  
+  runif(5)
+ 
+  # 设定随机数种子
+  set.seed(1) # set.seed()里面的数仅代表随机种子的序号，并没有特殊的含义
+  runif(5)
+  set.seed(2)
+  runif(5)
+  # 生成多元正态分布
+  install.packages("MASS")
+  library(MASS)
+  miu <- c(230.7,146.7,3.6)
+  sigma <- matrix(c(15360.8,6721.2,-47.1,6721.2,4700.9,-16.5,-47.1,-16.5,0.3),nrow = 3,ncol = 3)
+  mydata <- mvrnorm(5,miu,sigma) # 生成5组三元正态分布随机数,返回的是一个矩阵
+  str(mydata)
+  class(mydata)
+  mydata <- as.data.frame(mydata) # 将mydata转化为数据框
+  names(mydata) <- c("y","x1","x2") # 将变量V1、V2、V3变量改名为y,x1,x2
+  dim(mydata)  # 输入数据框mydata的维度，第一个数表示观测数，第二个数表示变量数
+  -------------------------字符处理函数-----------------------------------------
+  # 计算字符数据的个数
+  x <- c("ab","cde","fghij")
+  length(x)
+  # 计算字符数据中字符的个数
+  x_3=x[3]
+  nchar(x_3)
+  # 提取一个字符数据（向量）的子串
+  x <- "abcdef"
+  substr(x,2,4)  # 提取出x的2到4个字符
+  # 替换字符向量的子串
+  substr(x,2,4) <- "222"
+  x
+  # 返回某个字符数据的位置
+  x <- c("b","A","c")
+  y=grep("A",x,fixed = TRUE)# fixed=FALSE代表"A"是一个正则表达式
+  #正则表达式用单个字符串描述，匹配一系列符合某个句法规则的字符串，如：
+  # ^[hc]?at 表示以0或1个h或c开头、后接at的字符串
+  # +表示前面的字符必须至少出现一次
+  # ?表示前面的字符最多只可以出现一次
+  # *表示前面的字符可以不出现，也可以出现一次或多次
+  y=grep("A",x,fixed = FALSE)# fixed=TRUE代表"A"是一个文本字符串
+  # 搜索某个字符数据，并替换它
+  x <- "Hello There"
+  # 查找空格，并替换成","
+  sub("\\s",",",x)    # "\s"是一个用来查找一个空白的正则表达式，他前面多出一个"\"视为了转义第二个"\"符号的
+  # 分割字符向量中的元素
+  x <- "abc"
+  y <- strsplit(x,"")  # 返回一个含有1个成分，3个元素的列表
+  y
+  str(y)
+  # 连接字符串
+  paste("x",1:3,sep = "")
+  paste("x",1:3,sep = "_")
+  # 直接连接两个字符串
+  paste("Today is",date()) # 连接字符串 "Today is"和date()
+  str(date())
+  # 大写转换
+  toupper("abc")
+  # 小写转换
+  tolower("ABC")
+  -------------------------其他实用函数-----------------------------------------
+  # 生成一个等差数列
+    seq(1,100,2)
+  # 将每个对象重复n次
+  y <- rep(1:3,3)
+  y  
+  # 创造美观的分割点，将一个连续性变量分割成n个区间，n+1个等间距取整值
+  pretty(1:3,100)
+  # 连接对象
+  y <- cat("Hello","Jane")  # 自带空格
+  # \b表示退格，\n表示另起一行(似乎没有起作用?)，\'表示
+  # 退格转义字符可以将\b之前的一个字符删去(这里使用\b的目的是删去cat自带的空格），然后忽略\b，继续下一个连接
+  name <- "Andy" 
+  cat( "Hello", name, "\b.\n", "Isn\'t R", "\t", "GREAT?\n")  # cat输出连接后的对象时，它
+  # 会将每一个对象都使用空格分开，所以我们要再句号之前使用退格转义字符
+  # -------------------------将函数应用于矩阵和数据框-----------------------------------------
+  b <- c(1.241,5.656,2.99)
+  round(b) #不加参数默认不保留小数位
+  c <- matrix(runif(30),nrow = 6,ncol = 5)
+  log(c)
+  # 求矩阵中所有元素的均值
+  mean(c)
+  # 求各列的均值
+  # apply可以应用于任意的R函数(甚至你自己编写的函数)，通过它，我们可以将函数应用到某个维度上
+  mean(c[1,])
+  apply(c,2,mean)
+  # 求第各行的均值
+  apply(c, 1, mean)  # 如果传入2，则求的是各列的均值
+  # 求第各行的截尾均值
+  apply(c, 1, mean,trim=0.2) 
+  -------------------------数据处理难题的一套解决方案-----------------------------------------
+    roster <- score
+  
+    options(digits = 2) # 限定保留小数点后两位
+    roster$学生姓名=as.character(roster$学生姓名) # 将学生姓名转化为因子
+    z <- scale(roster[,2:4]) # 将第2到第4列正态标准化
+    score <- apply(z,1,mean) # 计算每个学生的“加权”成绩
+    roster <- cbind(roster,score) # 将成绩合并与原始数据框
+    y <- quantile(score,c(0.8,0.6,0.4,0.2))
+    # 对不存在的变量赋值，R会直接创建这个变量
+    roster$grade[score >= y[1]] <- "A"
+    roster$grade[score < y[1] & score >=y[2]] <- "B"
+    roster$grade[score < y[2] & score >=y[3]] <- "C"
+    roster$grade[score < y[3] & score >=y[4]] <- "D"
+    roster$grade[score < y[4]] <- "F"
+    # 把学生的姓和名拆开
+    name <- strsplit((roster$学生姓名)," ") # 返回一个列表
+    str(name)
+    # 提取列表name中的第一部分
+    firstname <- sapply(name, "[", 1) # "["是一个可以提取某个对象一部分的函数
+    lastname <- sapply(name,"[", 2)
+    roster <- cbind(firstname, lastname, roster[, -1]) # 将学生姓名删除，加入学生的姓和名
+    roster <- roster[order(lastname,firstname),] # 根据姓和名的字母顺序排序
+    
+  #  -------------------------重复和循环-----------------------------------------
+  # for循环重复地执行一个语句，直到变量的值不再被包含在序列seq中
+    for (i in 1:10) 
+      print("Hello")
+  # while循环重复地执行一个语句，直到条件不再为真为止
+    i <- 10
+    while(i > 0)
+    {
+      print("Hello"); # 复合语句是包含在花括号{}中的一组R语句，使用分号分割
+      i <- i-1
+    }
+    
+    #  -------------------------条件执行-----------------------------------------
+    # 如果grade是一个字符向量，则它会被转化成一个因子
+    grade <- c("a","b","c")
+    if (is.character(grade)) 
+      grade <- as.factor(grade)
+    
+    if (!is.factor(grade)) grade <- as.factor(grade) else print("Grade already  # if else写一行可以不用加花括号
+ is a factor")
+    
+    # 如果grade不是一个因子，就将它转化成一个因子。否则打印说明它已经是一个因子
+    if (!is.factor(grade)){
+      grade <- as.factor(grade)
+    } else {
+      print("Grade already is a factor")
+    } # 如果要写成块状代码，else必须紧跟if后面，而且还要块状代码还要用花括号{}括起来  
+      
+    # ifelse 更加紧凑的表达
+    ifelse(score > 0.5,print("Passed"),print("Failed"))
+    outcome <- ifelse(score > 0.5,"Passed","Failed") # 储存是否通过的字符串向量
+    # 根据一个表达式的值选择执行语句
+    feelings <- c("sad","afraid")
+    for (i in feelings)
+      print(
+        switch (i,
+          happy="I am glad you are happy",
+          afraid="There is nothing to fear",
+          sad="Cheer up",
+          angry="Calm down now"
+        )
+      )
+    #  ----------------------------用户自编函数-------------------------------
+    # 定义一个对称函数，但不打印
+    # 函数内也要使用花括号
+    # parametric与print可以赋值，其含义是如果用户没有传入参数，则默认parametric=TRUE,prin=FALSE
+    mystats <- function(x,parametric=TRUE,print=FALSE) {   
+      if(parametric){
+        center <- mean(x);
+        spread <- sd(x)
+      }
+    else{
+      center <- median(x);
+      spread <- mad(x)
+    }
+      if(parametric & print){
+        cat("Mean=",center,"\n","SD=",spread,"n") # R中cat函数的作用与print相似
+      }
+# 如果不print，那自然什么都不执行。如果print，则需要看需要print什么内容
+      else if(print & !parametric){
+        cat("Median=", center, "\n", "MAD=", spread, "\n")
+      }          
+    result <- list(center=center, spread=spread)
+    return(result)
+    }
+    set.seed(1234)
+    x <- rnorm(500)
+    y <- mystats(x,parametric = TRUE,print = TRUE)
+    str(y)  # 返回了一个列表给y
+    # 你可以像数据框一样使用列表
+    y$center
+    y$spread
+    Median  # 变量仅在函数内存在
+    y
+    # 让用户选择输出当天日期的格式
+    # " = "的作用比" <- "更广，它除了可以赋值之外，还可以传参
+    # %m 表示月份（00-12） %A 表示非缩写的星期名  %B 表示非缩写的月份 
+    mydate <- function(type = "long"){
+      # long是一个字符串，所以传入的参数也要是一个字符串
+      switch(type,
+             "long" = format(Sys.time(), "%A %B %d %Y"),  # 里面可以不用写成字符串,当然写成字符串也可以
+             "short" = format(Sys.time(), "%m-%d-%y"),
+             cat(type,"is not a recognized type\n") # 使用一个表达式来捕获错误的参数能增强鲁棒性
+      )
+    }
+    mydate(type="long")
+    mydate(type="short")
+    mydate(type = "good")
+    #  ----------------------------整合与重构-------------------------------冲刺~~~~~~~~~~
+    # 大傻瓜，mtcars已包含在R中
+    # 转置
+    cars <- mtcars[1:5,1:4]
+    t(cars)
+    # 整合数据
+    options(digits=3)
+    # 按照气缸数cly和档位数gear来分组，计算每组各个其他变量的均值
+    # 通过Group.cyl=Group的方式给组别命名, 如不命名，则默认为Group1
+    attach(mtcars)
+    aggdate <- aggregate(mtcars, by=list(Group.cyl=cyl,Group.gears=gear), FUN=mean, na.rm=TRUE)
+   
+    #  ----------------------------强大的reshape2包-------------------------------
+    library(reshape2)   # 导入包不用加引号
+    mydata <- read.csv("222.csv")
+    # 融合,每个测量变量独占一行，行中有唯一确定这个测量所需要的标识符变量
+    md <- melt(mydata, id=c("ID","Time")) # 选取ID与Time为标识符
+    md
+    # 将融合后的数据重铸为任意形状
+    # 不执行整合
+    # 用ID和Time表示variable
+    dcast(md,ID+Time~variable)   # 返回一个数据框
+    # 用ID和variable表示Time
+    dcast(md,ID+variable~Time)
+    # 用ID表示variable和Time
+    dcast(md,ID~variable+Time)
+    # 执行整合,平均每个编号下在两个时刻的观测
+    dcast(md,ID~variable,mean)
+    # 平均每个时刻下两个编号的观测
+    dcast(md,Time~variable,mean)
+    # 平均每个编号下两个变量的观测
+    dcast(md,ID~Time,mean)
+    
