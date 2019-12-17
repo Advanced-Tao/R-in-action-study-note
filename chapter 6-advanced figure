@@ -1,0 +1,210 @@
+# ——————————————————————————————chapter 6-------------------------------
+# ——————————————————————————————条形图-------------------------------
+library(vcd)
+Arthritis$Improved
+class(Arthritis$Improved) # Arithritis$Improved记录了一个有序因子向量
+counts <- table(Arthritis$Improved) # 将Arithritis$Improved改写成列联表的形式
+
+# 绘制条形图
+# 垂直条形图, 注意传入的参数是列联表，不是原始数据(有序因子)
+barplot(counts,main="Simple Bar Plot",xlab = "Improvement",
+        ylab = "Frequency")
+# 水平条形图
+barplot(counts,main="Simple Bar Plot",xlab = "Improvement",
+        ylab = "Frequency",horiz=TRUE)
+# 但是对于无序因子(或有序因子)，不需要先转化成列联表也能创建垂直条形图
+plot(Arthritis$Improved, main="Simple Bar Plot",xlab="Improved",
+     ylab="Frequency",horiz=TRUE)
+plot(Arthritis$Improved, main="Simple Bar Plot",xlab="Improved",
+     ylab="Frequency",horiz=FALSE)
+mpg_frame$mpg_cut
+plot(mpg_frame$mpg_cut)
+table <- table(mpg_frame$mpg_cut)
+ratio <- prop.table(table)
+barplot(ratio,space = 0.5, ylab = "Probability",cex.axis = 1.2,cex.names = 1,
+        main = "the Probability of Miles Per Gallon")
+hist(mtcars$mpg)
+# ——————————————————————————堆砌条形图和分组条形图-------------------------------
+# Placebo表示无效对照剂
+counts <- table(Arthritis$Improved, Arthritis$Treatment)
+counts # 结果表明接受治疗还是十分有效果的
+# 绘制堆砌条形图
+# legend 表示加图例，这里的legend不需要传入复杂的参数
+# rownames(counts)返回的是c("None","Some","Marked")
+# 传入counts，R以变量名为横轴，以观测为纵轴
+barplot(counts,main="Stacked Bar Plot",xlab="Treatment", ylab = "Frequency",
+        col = c ("red", "yellow", "green"),legend=rownames(counts),horiz = TRUE)
+# 分组条形图
+barplot(counts,main="Grouped Bar Plot",xlab="Treatment", ylab = "Frequency",
+        col = c ("red", "yellow", "green"),legend=rownames(counts),
+        beside = TRUE)
+# ——————————————————————————均值条形图-------------------------------
+# state.x77里面有各州的名字
+# state.region是一个分类因子
+states <- data.frame(state.region, state.x77)  
+# 将各个地区的文盲率取平均值
+means <- aggregate(states$Illiteracy, by=list(state.region), FUN=mean)
+means <- means[order(means$x),]   # order(means$x)返回一个数值向量，里面储存着升序排序
+
+# names.arg=means$Group.1可以展示标签，传入的参数为一个分类因子
+barplot(means$x) 
+barplot(means$x, names.arg = means$Group.1) # names.arg允许指定一个字符向量(或因子向量)作为条形的标签名
+title("Mean Illiteracy Rate")
+# ——————————————————————————条形图的微调-------------------------------
+par(mar=c(5,8,4,2))   # 调节边界大小，默认为(5, 4, 4, 2)+0.1，显然，这里增加了y边界的大小
+par(las=2)  # 表示标签垂直于坐标轴
+counts <- table(Arthritis$Improved)
+# 如果不传入names.arg=c("No Improvement", "Some Improvement", "Marked Improvement")
+# 则默认传入的参数为None, Some和Marked
+barplot(counts, main = "Treatment Outcome", horiz = TRUE, cex.names = 0.8,
+        names.arg=c("No Improvement", "Some Improvement", "Marked Improvement"))
+lines(density(mtcars$mpg), col="blue", lwd=2)
+# ——————————————————————————棘状图-------------------------------
+# 棘状图对堆砌条形图做了重缩放，使得每一段的高度成比例，每一个条形的高度为1
+library(vcd)
+attach(Arthritis)
+counts <- table(Treatment, Improved)
+spine(counts, main="Spinogram Example")
+detach(Arthritis)
+# ——————————————————————————饼状图-------------------------------
+# 饼图在商业世界中无处不在，但是多数统计学家对饼图持有否定态度，他们更加推荐条形图
+# 和点图，因为相对于面积，人们对长度的判断更为精准
+par(mar= c(1.8,2,1.8,2))
+par(mfrow=c(2,2)) # 按行将四幅图填充成2×2的一副图
+slices <- c(10, 12, 4, 16, 8)
+lbls <- c("US", "UK", "Australia", "Germany", "France")
+# slices传入的是每一个扇形的面积，labels传入的是各扇形标签的字符型向量
+pie(slices, labels= lbls, main="Simple Pie Chart")
+
+pct <- round(slices/sum(slices)*100) # pct将各个数值比例化
+# 前面一个" "连接lbls与pct，后面一个sep=""连接pct与%
+lbls2 <- paste(lbls, " ", pct, "%", sep="") 
+# rainbow函数定义了各扇形的颜色，其中rainbow(length(lbls2))=rainbow(5)，即为图形提供了5种颜色
+# 传入pct或者传入slices达成的效果是一样的
+pie(slices, labels=lbls2, col=rainbow(length(lbls2)), main="Pie Chart with Percentages")
+# 三维饼状图无法增进对数据的理解，并且被认为是分散注意力的视觉花瓶，但很奇怪的是，统计学家在私下里却觉得三维饼状图好看
+
+library(plotrix)
+# explode = 0.1代表着蛋糕之间的分离程度
+pie3D(slices, labels=lbls, explode = 0.1, main="3D Pie Chart")
+mytable=table(state.region)
+
+lbls3 <- paste(names(mytable), "\n", mytable)
+pie(mytable, labels= lbls3, 
+    main="Pie Chart from a Table\n (with sample sizes)")
+
+# 饼图让相对大小的比较变得困难，而扇形图可以同时展示相对数量和相对差异
+library(plotrix)
+par(mar= c(5,4,2,2)+0.1)
+par(mfrow=c(1,1)) 
+# 在扇形图中，宽度是重要的，但是半径不重要
+fan.plot(slices, labels = lbls, main = "Fan Plot") # 注意这几个扇形是相互重叠的
+# ——————————————————————————直方图-------------------------------
+# 与条形图、饼图不同，直方图描述的是连续性变量的分布
+# 通过在x轴上将值域分割为一定数量的组，我们可以再y轴上展示各组的频数
+# 参数freq=FALSE表示根据概率密度而不是频数绘制图形,参数breaks用于控制组的数量
+# 默认的，我们生成等距的切分
+par(mfrow=c(1,1)) 
+hist(mtcars$mpg) # 每加仑汽油行驶的英里数
+
+# breaks=12表示12组
+hist(mtcars$mpg,breaks=12, col="red", xlab="Miles Per Gallon",main="Colored histogram with 12 bins")
+# freq=FALSE代表按照概率密度而不是频数去绘制图形
+
+hist(mtcars$mpg,breaks=12, freq=FALSE,col="red", xlab="Miles Per Gallon",main="Colored histogram with 12 bins")
+# 叠加一条轴须图和密度曲线(核密度估计)，它们为数据的分布提供了一种更加平滑的描述
+# 轴须图展示了数据出现的位置，一个竖杠表示相应的数字出现了一次
+# 如果数据中有许多结(相同的值)，则可以使用通过向每一个数据点添加一个小小的随机值amount=0,01
+# 从而将数据打散,以避免重叠的点产生影响
+rug(jitter(mtcars$mpg), amount=0.01)
+# 绘制核密度函数曲线为蓝色、双倍默认于线条宽度
+lines(density(mtcars$mpg), col="blue", lwd=2)
+
+x <- mtcars$mpg
+h <- hist(x, breaks=12, col="red", xlab="Miles Per Gallon",
+          main="Histogram with normal curve and box")
+xfit <- seq(min(x), max(x), length=40) # 生成40个排列在min(x)到max(x)之间的数据
+yfit <- dnorm(xfit, mean=mean(x), sd=sd(x)) # 生成40个正态分布的密度函数值
+# h$mids[1:2]代表着储存着第一个柱子和第二个柱子的中心点横坐标的向量
+# diff(h$mid[1:2])得到组距为2，概率密度(yfit) × 组距 × 样本数量(32)就可以得到频数
+yfit <- yfit*diff(h$mids[1:2]*length(x)) 
+lines(xfit, yfit, col="blue", lwd=2)  # 先打点，后将各点用小线段连接起来
+# 用一个盒型将图形围绕起来
+box()
+
+# ——————————————————————————核密度图-------------------------------
+par(mfrow=c(2,1))
+d <- density(mtcars$mpg)
+str(d)
+class(d) # d是一个列表，里面有x和y的坐标
+plot(d)
+# 添加一个标题
+plot(d, main="Kernel Density of Miles Per Gallon")
+# polygon根据顶点的x,y坐标(由d <- density()提供)绘制多边形
+# border="blue"表示将曲线修改为蓝色，col="red"表示用实心红色填充曲线下方的区域
+polygon(d, col="red", border="blue")
+# 添加棕色的轴须图
+rug(mtcars$mpg,col="brown")
+
+# 使用核密度图很方便地比较不同组别内数据的差异
+library(sm)
+par(mfrow=c(1,1)) 
+attach(mtcars)
+# 将数值型变量转化成无序因子
+cyl_f <- factor(cyl, levels = c(4,6,8), 
+                labels = c("4 cyinder","6 cylinder","8 cylinder"))
+sm.density.compare(mpg, cyl_f, xlab="Miles Per Gallon")
+title(main="MPG Distribution by Car Cylinders")
+# fill=1代表黑，2代表红，3代表绿，4代表蓝
+colfill <- c(2:(1+length(levels(cyl_f))))   # levels(cyl_f)返回无序因子的所有水平
+# locator(1)表示交互式地添加图例
+legend(locator(1), levels(cyl_f), fill=colfill)
+detach(mtcars)
+help(legend)
+
+
+library(sm)
+par(mfrow=c(1,1)) 
+attach(mtcars)
+# 将数值型变量转化成无序因子
+cyl_f <- factor(cyl, levels = c(4,6,8), 
+                labels = c("4 cyinder","6 cylinder","8 cylinder"))
+sm.density.compare(mpg, cyl_f, xlab="Miles Per Gallon")
+title(main="MPG Distribution by Car Cylinders")
+# fill=1代表黑，2代表红，3代表绿，4代表蓝
+colfill <- c(2:(1+length(levels(cyl_f))))   # levels(cyl_f)返回无序因子的所有水平
+# locator(1)表示交互式地添加图例
+legend(locator(1), levels(cyl_f), fill=colfill)
+detach(mtcars)
+
+# ——————————————————————————箱型图-------------------------------
+# 箱型图(盒须图)通 过绘制连续型随机变量的五数总结，即最小值、25%分位数，中位数，75%分位数和最大值，描述了连续型随机变量的分布
+# 箱型图能够先输出可能的离群点,通常情况下，须线的长度不会超过盒型(即四分位盒子)各端加1.5×IQR(IQR是四分位距--即盒子的宽度，它等于上四分位数-下四分位数)
+# 在此范围外的离群值用点来表示
+# 虽然箱子是对称的，但是上侧的须要比下侧的须更长，所以我们认为图形应该是右偏的
+boxplot(mtcars$mpg, main="Box plot", ylab="Miles per Gallon") # 随手添加标题、标签是一个好习惯
+# 读出箱型图中五数概括中的五个数
+boxplot.stats(mtcars$mpg) # 返回一个列表
+
+# 使用并列箱线图进行跨组比较
+# mpg ~ cyl中cyl为类别型变量，mpg为连续型变量，表示按类别型变量分组展示连续型变量mpg的箱型图
+
+boxplot(mpg ~ cyl, data=mtcars, main = "Car Mileage Data(Diffrent number of cylinders)",
+        xlab="Number of Cylinders", ylab="Miles Per Gallon")
+# varwidth=TRUE使得箱型图的宽度与样本大小的平方根成正比，notch=TRUE可以得到含有凹槽的箱型图
+# 如果两个箱子的凹槽互不重叠，则代表它们的中位数有显著差异
+boxplot(mpg ~ cyl, data=mtcars, main = "Car Mileage Data(Diffrent number of cylinders)",
+        xlab="Number of Cylinders", ylab="Miles Per Gallon", notch=TRUE, varwidth=TRUE, col="red")
+# 绘制两个交叉因子的箱型图
+mtcars$cyl_f <- factor(mtcars$cyl,levels = c(4,6,8),
+                       labels = c("4 cylinders","6 cylinders","8 cylinders"))
+mtcars$am_f <- factor(mtcars$am, levels=c(0,1),
+                      labels = c("auto", "manual"))
+# 注意颜色的循环使用，这里共有6副箱型图，2种指定颜色，所以每种颜色重复使用了3次
+boxplot(mpg ~ am_f * cyl_f,
+        data=mtcars,
+        varwidth=TRUE,
+        col=c("gold","darkgreen"),
+        main="MPG Distribution by Auto Type",
+        xlab="Auto Type", ylab="Miles Per Gallon")
+
