@@ -1,0 +1,277 @@
+# --------------------------------ggplot2基本介绍-----------------------------------------
+library(ggplot2)
+ggplot(data = mtcars, aes(x = wt, y = mpg)) + # aes(aesthetics)指定了每个变量扮演的角色
+  geom_point() +  # 在图形中画点，创建一个散点图
+  labs(title = "Automobile Data", x = "Weight", y = "Miles Per Gallon")
+
+ggplot(data = mtcars, aes(x = wt, y = mpg)) + 
+  geom_point(pch = 17 ,color = "blue", size = 2) + 
+  # 用蓝色的两倍大小的三角形(pch =17)画点
+  geom_smooth(method = "lm", color = "red", linetype =2)
+  # 添加一条线性拟合(method = "lm")的红色虚线(linetype =2)
+  # 默认情况下，拟合直线会给出95%的置信区间
+  labs(title = "Automobile Data", x = "Weight", y = "Miles Per Gallon")
+  800*600
+  # ------------------------------分组和小面化---------------------
+  # 分组是在一个图形中展示两组或两组以上的观察结果F
+  # 小面化是指在单独、并排的图形上显示观察组
+  # ggplot在定义组合面的时候要求使用因子factor
+  mtcars$am <- factor(mtcars$am, levels=c(0,1),
+                      labels=c("Automatic", "Manual"))
+  mtcars$vs <- factor(mtcars$vs, levels=c(0,1),
+                      labels=c("V-Engine", "Straight Engine"))
+  mtcars$cyl <- factor(mtcars$cyl)
+  
+  ggplot(data = mtcars, aes(x = hp, y = mpg,
+                            shape = cyl, color = cyl )) + 
+        # 因子cyl有三个levels 4 6 8，每个level都有特定的shape和color
+        geom_point(size =3) +
+        facet_grid(am ~ vs)
+        # 根据挂挡类型am和引擎类型vs两两组合生成不同的小面图
+        labs(title = "Automobile Data",
+        x = "Weight", y = "Miles Per Gallon")
+  
+ # ------------------------------变量的视觉呈现方式(几何函数的介绍)-----------------
+ # 生成直方图
+ data(singer, package = "lattice")
+ ggplot(singer, aes(x = height)) + geom_histogram()
+ # 生成箱线图
+ ggplot(singer, aes(x = voice.part, y = height)) + geom_boxplot()
+ # 身高越高，音调越低
+ library(car)
+ data("Salaries", package = "car")
+ ggplot(Salaries, aes(x = rank, y = salary)) + 
+   geom_boxplot(fill = "cornflowerblue",
+   color = "black", notch = T) +
+   # 对用黑色绘制box的边框，并将其区域内填充为矢菊花蓝色(fill = "cornflowerblue"), 禁止方块图为缺口(notch =T)
+   geom_point(position = "jitter", col = "blue", alpha = .5) +
+   # 绘制蓝色的、透明的(alpha = .5)抖动点(position = "jitter", )
+   geom_rug (sides = "l", color = "black")
+   # 将黑色地毯图安放在左侧(side = "l")
+ # 把箱型图和小提请图结合在一起
+ # ------------------------------分组--------------------------------------
+ # 分组密度图
+ ggplot(data = Salaries, aes(x = salary, fill = rank)) + 
+        # fill = rank(a factor)可以让ggplot根据rank的三个类型分别绘制密度图
+        geom_density(alpha = .3)
+ # ggplot的特点是可以自行生成图例
+ # 分组散点图
+ ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = rank,
+                      shape = sex)) +
+        # 用不同的颜色来代表职称类型，用不同符号样式来表示性别类型
+        geom_point()
+ # 分组条形图
+ ggplot(Salaries, aes(x = rank, fill = sex)) + 
+        # 按照不同的性别分别绘制每个rank的计数条形图
+        geom_bar(position = "stack") + labs(title = "position = stack ")
+        # 堆叠条形图
+ 
+ ggplot(Salaries, aes(x = rank, fill = sex)) + 
+        geom_bar(position = "dodge") + labs(title = "position = dodge ")
+        # 闪避条形图
+ 
+ ggplot(Salaries, aes(x = rank, fill = sex)) + 
+        geom_bar(position = "fill") + labs(title = "position = fill ", y = "proportion")
+        # 比例规整条形图
+        # 比例规整条形图中的纵轴应该设置为proportion 而不是 count
+ 
+ # -----------------------------------------刻面----------------------------------------
+ # 如果图形不用重叠在同一张图表中，其关系就是清晰的，我们也可以通过并排的多张刻面图来展示
+ # 刻面直方图
+ 
+ ggplot(data = singer, aes(x = height)) + 
+        geom_histogram() + 
+        facet_wrap(~voice.part, nrow = 4)
+ # 刻面散点图
+ ggplot(Salaries, aes(x = yrs.since.phd, y = salary,color = rank,
+        shape = rank)) + 
+ # fill, color, shape等参数都蕴含在aes中
+        geom_point() + facet_grid(.~sex)
+ # 刻面核密度图
+ ggplot(data = singer, aes(x = height, fill = voice.part)) + 
+        geom_density() + 
+        facet_grid(voice.part~.)
+ # ----------------------------------------添加光滑曲线---------------------------------------
+ # 使用非参数光滑曲线(geom_smooth())
+ ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary)) + 
+        geom_smooth(method = "loess") + geom_point()
+ # 使用二次多项式回归
+ ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary)) + 
+        geom_smooth(method = "lm", formula = y ~ poly(x,2),
+                    # 将y按照x的2次多项式做回归(y ~ poly(x,2))
+                    se = F, size =1) + 
+                    # 不绘制置信区间(se = F)
+        geom_point()
+ 
+ ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary,
+        linetype = sex, shape = sex, color = sex)) + 
+        # 平滑曲线类型、点的形状和颜色都按照性别划分
+        geom_smooth(method = "lm", formula = y ~ poly(x,2),
+                    se = F, size = 1) +
+        geom_point(size =2)
+ # 对于数据集的大部分范围，男性可以拿到更多的薪水
+ # ------------------------------------------修改ggplot图形的外观---------------------------
+ # 修改坐标轴
+library("car")
+library(ggplot2)
+data(Salaries, package = "car")
+ggplot(data = Salaries, aes(x = rank, y = salary, fill = sex) ) + 
+       geom_boxplot() + 
+       scale_x_discrete(breaks = c("AsstProf", "AssocProf", "Prof"),
+                        labels = c("Assistant\nProfessor","Associate\nProfessor",
+                                   "Full\nProfessor")) + 
+       # 指定横坐标上因子的排列顺序和因子的命名方式scale_x_discrete(breaks = , labels = )
+       scale_y_continuous(breaks = c(50000,100000,150000,200000),
+                          labels = c("$50K","$100K","$150K","$200K")) + 
+       # 指定纵坐标上连续型变量的坐标轴排列顺序和连续型变量的命名方式scale_y_continuous(breaks = , labels = )
+         labs(title = "Faculty Salary by Rank and Sex", x = "", y = "")
+       # 取消横纵坐标的坐标轴标签 labs( x = "", y = "")
+ # 修改图例
+ggplot(data=Salaries, aes(x=rank, y=salary, fill=sex)) +
+  geom_boxplot() +
+  scale_x_discrete(breaks=c("AsstProf", "AssocProf", "Prof"),
+                   labels=c("Assistant\nProfessor",
+                            "Associate\nProfessor",
+                            "Full\nProfessor")) +
+  scale_y_continuous(breaks=c(50000, 100000, 150000, 200000),
+                     labels=c("$50K", "$100K", "$150K", "$200K")) + 
+  labs(title = "Faculty Salary by Rank and Gender",
+       x = "", y ="", fill = "Gender") + 
+  # 将图例中的标签sex改为Gender(labs(fill = "Gender)) 
+  theme(legend.position = c(.1,.8))
+  # 改变图例的位置，让其出现在距离左侧边缘10%和底部边缘80%的部分 (theme(legend.position = c(.1,.8)))
+  
+  # 修改标尺，将数据空间中的观测值映射到可视化的空间中
+  # 气泡图
+  ggplot(mtcars, aes(x = wt, y = mpg, size = disp)) + 
+         # 生成连续型变量disp(发动机排量)的标尺(size = disp)
+         geom_point(shape = 21, color = "black", fill = "cornsilk") +
+         # 指定用米绸色(fill = "cornsilk")的黑色边框(color = "black")的圆形(shape = 21)打点
+         labs(x = "Weight", y ="Miles Per Gallon",
+              title = "Bubble Chart", size = "Engine\nDisplacement")
+         # 将连续型变量离散化，给出各个离散化后的数值大小(用圆形表示)
+  # 颜色图
+  ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary, color = rank)) + 
+         # 按照颜色来区分不同的rank
+         scale_color_manual(values = c("orange", "olivedrab","navy")) + 
+         # 指定不同rank的颜色
+         geom_point(size = 2)
+  # 如果你是一个色弱......
+  ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary, color = rank)) + 
+         scale_color_brewer(palette = "Set1") +
+          # 预先指定分得清的颜色集(scale_color_brewer(palette = "Set1"))
+         geom_point(size = 2)
+  # 修改主题
+  mytheme <- theme(plot.title = element_text(face = "bold.italic", size ="14", color = "brown"),
+                   # 图的标题应该为粗斜体(face = "bold.italic")的棕色(color = "brown")14号字(size = "14) 
+                   axis.title = element_text(face = "bold.italic", size = 10, color = "brown"),
+                   # 轴的标题为粗斜体的棕色10号字
+                   axis.text = element_text(face = "bold", size = 9, color ="darkblue"),
+                   # 坐标轴标签为粗体的深蓝色9号字
+                   panel.background = element_rect(fill = "white",  color = "darkblue"),
+                   # 画图区域有宝色的填充和深蓝色的边框
+                   panel.grid.major.y = element_line(color = "grey", linetype = 1),
+                   # 主水平网格线是灰色的实线
+                   panel.grid.minor.y = element_line(color = "grey", linetype = 2),
+                   # 次水平网格是灰色的虚线
+                   panel.grid.minor.x = element_blank(),
+                   # 垂直网格不输出
+                   legend.position = "top")
+                   # 图例展示在图的顶部
+  ggplot(Salaries, aes(x = rank, y = salary, fill =sex)) +
+         geom_boxplot() + 
+         labs(title = "Salary by Rank and Sex", x = "Rank", y = "Salary") + 
+         mytheme
+  
+  # 多重图,将多个图保存到一个图片文件中
+  
+p1 <- ggplot(data = Salaries, aes(x = rank)) + geom_bar()
+p2 <- ggplot(data = Salaries, aes(x = sex)) + geom_bar()
+p3 <- ggplot(data = Salaries, aes(x = yrs.since.phd, y = salary)) + geom_point()
+library("gridExtra")
+# 将图形输出结果储存在savetime.png中
+png("savetime.png",width = 1000, height = 500)
+grid.arrange(p1,p2,p3, ncol =3)  
+dev.off()
+# 将图形输出结果储存在savetime.pdf中
+pdf("savetime.pdf",width = 8, height = 4)
+grid.arrange(p1,p2,ncol =2)  
+grid.arrange(p1,p3,ncol =2)
+grid.arrange(p2,p3,ncol =2)  
+dev.off()
+# 标题居中
+theme(plot.title = element_text(hjust = 0.5))
+# ---------------------------------保存图形------------------------------------
+k = 3.32 + log10(nrow(mtcars))
+hist(mtcars$mpg)
+(max(mtcars$mpg) - min(mtcars$mpg))/5
+myplot1 <- ggplot(mtcars, aes(x = mpg)) + 
+  geom_histogram(aes(y =..density..),binwidth = 4.7)
+myplot2 <- ggplot(mtcars, aes(x = mpg, y = )) + geom_histogram(binwidth = 4.7)
+grid.arrange(myplot1,myplot2,ncol =2)
+# 画连续性变量时使用，应该改用geom_bar
+ggplot(mtcars, aes(x = mpg)) + 
+  geom_histogram(aes(y =..density..),bins = 5)
+
+mpg_cut <- cut(mtcars$mpg, breaks = 5)
+mpg_frame <- data.frame(mtcars$mpg, mpg_cut)
+
+# 画成ratio形式
+library("plyr")
+cut <- ddply(mpg_frame, .(mpg_cut),function(x){
+  nrow(x)
+})
+cut$ratio <- cut$V1/sum(cut$V1)
+ggplot(cut, aes(x = mpg_cut, y = ratio)) + 
+  geom_bar(stat = "identity")
+
+barplot(cut$mpg_cut)
+
+ggplot(mtcars, aes(x = mpg)) + geom_histogram()
+ggplot(mtcars, aes(x = mpg)) + geom_density()
+hist(mtcars$mpg, freq = F, xlim = c(10,30))
+ggsave(file = "mygraph.png", plot = myplot, width =5, height =4 )
+# 将ggplot绘制后的图像myplot储存在工作目录下的mygraph.png中，大小为5英寸×4英寸
+# 如果忽略plot = myplot,最近绘制的图像会被自动储存
+# ----------------------------------一个例子------------------------------------
+x <- seq(1,500,5)
+y <- (x-1)*(x-2)*(x-3)*(x-4)*(x-5)/(3*x-2)^5
+library("ggplot2")
+data <- data.frame(x,y)
+ggplot(data = data, aes(x = x, y = y)) +
+  geom_point() + 
+  geom_hline(aes(yintercept =1/35),colour = "blue",linetype ="dashed") + 
+  geom_hline(aes(yintercept =1/243),colour = "red",linetype ="dashed") +
+  scale_y_continuous(breaks = c(1/243,1/35), labels = c("1/243","1/35")) 
+# ---------------------------------绘制双坐标轴-----------------------------------
+library("ggplot2")
+scale <- c(6023.3,7510.6,9420.2,11860,13300)
+rate <- c(0.231,0.2469,0.2543,0.2590,0.1214) # 环比增速
+year <- seq(2014,2018,1)
+temp <- data.frame(scale = scale, rate = rate, year = year)
+ggplot(data = temp, aes(x = year)) + 
+  geom_bar(aes(y = scale,fill = "产业规模"),stat = "identity",alpha = 0.5) +
+  geom_line(aes(y = rate*5000*5,color = "环比增长率"),alpha=1,linetype =1) + 
+  scale_y_continuous(sec.axis =  sec_axis(~./(5000*5),name = "环比增长率")) + 
+  scale_fill_manual(values = c("blue","red")) + 
+  labs(y = "产业规模(亿元)", x ="年份",cex =1.2)
+
+  
+
+p <- ggplot(obs, aes(x = Timestamp))
+p <- p + geom_line(aes(y = air_temp, colour = "Temperature"))
+
+# adding the relative humidity data, transformed to match roughly the range of the temperature
+p <- p + geom_line(aes(y = rel_hum/5, colour = "Humidity"))
+
+# now adding the secondary axis, following the example in the help file ?scale_y_continuous
+# and, very important, reverting the above transformation
+p <- p + scale_y_continuous(sec.axis = sec_axis(~.*5, name = "Relative humidity [%]"))
+
+# modifying colours and theme options
+p <- p + scale_colour_manual(values = c("blue", "red"))
+p <- p + labs(y = "Air temperature [°C]",
+              x = "Date and time",
+              colour = "Parameter")
+p <- p + theme(legend.position = c(0.8, 0.9))
+p
