@@ -1,0 +1,176 @@
+#----------------------------基本统计分析---------------------------------
+# 下面，我们继续来探索激动人心的两两变量之间的关系
+#----------------------------描述性统计分析---------------------------------
+myvars <- c("mpg","hp", "wt")
+# 取出前6行
+head(mtcars[,myvars])
+# 给出一些简单的描述性统计量
+summary(mtcars[,myvars]) # summary给出分布五数及均值以及因子向量、逻辑向量的频数统计
+
+# 通过sapply()和自行创建的函数计算描述性统计量
+mystats <- function(x, na.omit=FALSE){ # 默认不会忽略缺失值
+  if(na.omit)
+    x <- x[!is.na(x)]  # 如果有缺失值,则重构对象，重构后的对象无缺失值
+m <- mean(x)
+n <- length(x)
+s <- sd(x)
+skew <- sum((x-m)^3/n)/s^3  # 样本的偏度和峰度都是有偏估计
+kuirosis <- sum((x-m)^4/n)/s^4 - 3 
+return(c(n=n, mean=m, stdev=s, skew=skew, kuirosis=kuirosis))
+
+} 
+
+# sappy可以传入一个对象(然后对对象的每一个变量都运用传入的函数)
+# apply可以传入某个维度(矩阵的或者数据框的)
+sapply(mtcars[,myvars], mystats)
+# 如果你希望忽略缺失值(注意mystats中有na.omit=FALSE这个参数)
+# na.omit可以返回一个对象，这个对象已经剔除了所有含有缺失值的观测
+sapply(mtcars[,myvars], mystats, na.omit=TRUE)
+
+
+#----------------------------更多方法---------------------------------
+# 返回变量，观测的数目，缺失值的数目，唯一值的数目，平均值，分位数，五个最大值，五个最小值
+library(Hmisc)
+# describe里面新加入了一个Info变量，这个变量的值越大代表着变量越连续
+# describe里面新加入了一个Gmd变量(基尼均差)，这个变量衡量了任意两个变量距离的均值
+describe(mtcars[,myvars])  # 输入describe(mtcars[myvars])也可以，R默认读取所有行(但不会默认读取所有列！)
+library(pastecs)
+# basic=TRUE(默认)，则返回所有值、空值、缺失值的数量，以及最大值，最小值，值域还有总和
+# 若desc=TRUE(默认)，则计算中位数，平均数，平均数的标准误，平均数置信度度为95%的置信区间
+# 方差、标准差以及变异系数
+# 若norm=TRUE(不是默认的)，则返回正态分布统计量，包括峰度、偏度以及他们的统计显著程度
+# 以及Shapiro-Wilk正态检验结果
+# p值代表平均数的置信区间(默认置信度为95%)
+
+# hp表示gross horsepower 总功率
+myvars <- c("mpg", "hp", "wt")
+# se.mean表示均值的标准误，CI.mean.0.95表示95%的置信区间(一半区间长度)
+# coef.var表示变异系数
+stat.desc(mtcars[myvars])
+# skew.2SE与kurt.2SE是偏度和峰度的检验统计量
+# 当|skew.2SE|(或|kurt.2SE|)> 1时，代表他们显著偏态(尖峰、平峰)
+# normtest.W是Shapiro-Wilk正态检验统计量，normtest.p是该检验统计量对应的概率值
+stat.desc(mtcars[myvars], norm = TRUE)
+# psych包中也有一个describe()的函数，它可以计算非缺失值数量，平均数，标准差，
+# 中位数，截尾均值，绝对中位差，最小值，最大值，值域，偏度，峰度，平均值标准误
+# 绝对偏差是数据点到中位数的绝对偏差(绝对值距离)的中位数，mad比sd更加鲁棒，它几乎不受野点的干扰
+# mad是绝对偏差，trimmed是截尾均值，se是均值标准误
+# psych包和Hmisc包都有describe()函数,R将使用最后载入的程序包的函数
+library(psych)
+describe(mtcars[myvars])
+# 如果你想使用Hmisc包中的describe()函数，可以使用Hmics::后接函数的形式
+Hmisc::describe(mtcars[myvars])
+#----------------------------分组计算描述性统计量---------------------------------
+# am表示是否是自动挡，am=0表示是自动挡，am=1表示是手动挡
+# list(am=mtcars$am)中am只不过是一个名称
+aggregate(mtcars[myvars], by = list(am = mtcars$am), mean)
+aggregate(mtcars[myvars], by = list(am = mtcars$am), sd)
+# aggregate()仅允许在每次调用中返回单返回值的函数，它无法一次返回多个统计量
+# 但是by()函数解决了这个问题
+# 定义dstats()函数，使得R可以对对象x的每一个组别都使用mystats()函数
+dstats <- function(x){
+    sapply(x, mystats)
+}
+# 根据mtcars$am来分组使用函数dstats()
+# 注意，此处不是传入参数，而是传入因子向量和函数，所以要注意传入顺序
+by(mtcars[myvars], mtcars$am, dstats)  
+#----------------------------分组计算的扩展---------------------------------
+library(doBy)
+summaryBy(mpg+hp+wt~am, data=mtcars, FUN=mystats)
+library(psych)
+# 注意describeBy()函数不允许对分组变量指定任意的施加函数
+describeBy(mtcars[myvars], list(am=mtcars$am))
+#----------------------------频数表和列联表---------------------------------
+# 之前我们都在研究如何描述连续型变量或连续型变量与类别型变量的组合，
+# 现在我们来研究如何描述类别型变量的组合
+# 首先来介绍适用于类别型变量的函数！
+library(vcd)
+# with函数可以用来赋值！
+options(digits = 3)
+# table函数默认忽略缺失值
+Arthritis$Improved
+table(Arthritis$Improved)
+mytable <- with(Arthritis,table(Improved))
+# 将频数转化为比例值
+prop.table(mytable)
+# 转为为百分比,表格可以直接参与运算，表格*100等于表格内每一个数都乘以100
+prop.table(mytable)*100
+# 以Treatment为行变量，以Improved为列变量，创建二维列联表
+mytable <- with(Arthritis, table(Treatment, Improved))
+# 用公式风格的输入创建列联表
+mytable <- xtabs(~ Treatment + Improved, data = Arthritis)
+# 计算边际频数与边际比例
+margin.table(mytable, 1)  # 1表示第一个变量(向右坍塌)
+# 1表示以第一个变量为类别因子,计算该类别因子各个类别的数值占该类别总数的比例
+prop.table(mytable, 1)   # 1表示第1个变量(向行变量坍塌，以行变量为总数)
+
+margin.table(mytable, 2)  # 2表示第二个变量(向列变量坍塌)
+prop.table(mytable, 2) # 2表示第二个变量(向列变量坍塌,以列变量为总数)
+
+# 获取各个单元格内的个数占总数的比例
+prop.table(mytable)
+
+# 添加边际和
+addmargins(mytable)
+# 添加边际比例
+addmargins(prop.table(mytable))
+# 仅添加右边的和(添加各行的和), 注意，这里的逻辑与之前的prop.table及margin.table有一些不一致
+addmargins(prop.table(mytable,1), 2)
+# 仅添加下边的和(添加各列的和)
+addmargins(prop.table(mytable,2), 1)
+
+# 生成实际的列联表格
+# 观察help("CrossTable"里面的参数设定，prop.chisq=TRUE
+# 表示每一个元胞的卡方值(用的是列联表独立性检验)都会写入结果当中
+library(gmodels)
+with(Arthritis, {
+    CrossTable(Treatment, Improved, chisq = TRUE)
+})
+
+# 三维列联表
+mytable <- xtabs(~ Treatment+Sex+Improved, data= Arthritis)
+# 改变三维列联表展示的方式
+ftable(mytable)
+margin.table(mytable,1) # 坍塌成第一个变量
+margin.table(mytable,2)
+margin.table(mytable,3)
+margin.table(mytable, c(1,3))  # 坍塌成第一个和第三个变量组成的二维列联表
+options(digits = 3)
+# 下面将Treatment×Sex中的每一个因子做为一个组，每一个组的总数都作为分母
+# 比如0.5938+0.2188+0.1875=1,这代表在不接受治疗的女性里面，只有18.75%的人有明显改善
+prop.table(mytable, c(1,2))
+
+ftable(prop.table(mytable,c(1, 2)))
+# 将
+addmargins(prop.table(mytable, c(1,2)),3) # 牢记在addmargins中3要与1,2不一致，这样才能获取相加等于1的和
+ftable(addmargins(prop.table(mytable, c(1,2)),3))
+# 获得百分比形式的表示
+ftable(addmargins(prop.table(mytable, c(1,2)),3))*100
+library(vcd)
+mytable <- xtabs(~ Treatment + Improved, data = Arthritis)           
+chisq.test(mytable)
+mytable <- xtabs(~ Sex + Improved, data = Arthritis)           
+# 注意，由于男性-一定程度上的改善的单元值是2(<5)，所以这可能使得卡方近似无效
+chisq.test(mytable) 
+
+# Fisher精确检验
+# Fisher精确检验的原假设是：边界固定的列联表中行和列是相互独立的
+# fisher.test可以再任意行列数大于等于2的二维列联表使用，但不能用于2×2列联表
+fisher.test(mytable)
+# Cochran-Mantel-Haenszel检验可以检验两个名义变量是否在第三个变量的每一层中都是
+# 条件独立(给定第三个变量的值)的，比如如果杀手被处死与肤色无关，那么，
+# 在加入受害者肤色作为控制之后，杀手被处死是否仍然与肤色无关呢？
+# 此检验假设不存在三阶交互作用(治疗情况×改善情况×性别)
+mytable <- xtabs(~Treatment+Improved+Sex, data = Arthritis)
+# Cochran-Mantel-Haenszel检验证明了在每一个性别水平下，患者疾病的缓解情况与是否
+# 接受治疗是明显有关系的
+mantelhaen.test(mytable)
+#----------------------------相关性度量---------------------------------
+# 这里介绍离散型变量相关性度量的方法
+# 不知道为什么，R不能给出Phi-Coefficient的值
+# 统计量的值越大，两个离散性变量的相关性越强
+mytable <- xtabs(~Treatment+Improved, data = Arthritis)
+assocstats(mytable)
+#----------------------------相关性度量---------------------------------
+
+
